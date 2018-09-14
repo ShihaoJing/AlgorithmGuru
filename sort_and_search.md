@@ -130,7 +130,7 @@ public:
 127. Word Ladder
 <https://leetcode.com/problems/word-ladder/description/>
 
-思路：由shortest想到用bfs
+思路：两个单词之间的转换可以看成是graph里面的两个node，所以在graph里找最短路径想到用bfs
 
 ```c++
 int ladderLength(string beginWord, string endWord, vector<string>& wordList) {
