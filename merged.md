@@ -1,14 +1,26 @@
 ## 解题思路
 ### General
 * 分解问题的角度: fix 某一维度，尝试另一维度上的所有可能，可能是array（i，j）pointers
+
 * 可能跟排序有关，尝试binary search
+
 * 一旦需要统计一个元素在集合中出现的次数，尝试hashmap
+
 * 求所有解，dfs + backtracking
+
 * 遇到字符串，字典，charboard等，Trie tree总是可以试试的
+
 * Range 里求最大/最小/Sum等特征，Segment Tree是个不错的选择
+
 * Matrix和Array通常都是：1. Two Pointers，2. Sliding Window（fixed/not fixed），3. DP
+
 * Reversed idea非常重要, 最长可能是某种最短的反面, 最多可能是某种最少的反面, obstacle的反面是reachable, subarray的反面是array中的剩下元素, left的反面是right
+
 * 在数组里找某一个数存不存在或者应该存在的位置时，注意number的取值范围，如果在0-n-1上时可能number本身就是index
+
+* 在做遍历时需要保存之前的信息，Stack是个不错的选择
+LC 907, 496, 739
+
 
 ### Tree
 ### Graph
@@ -957,4 +969,57 @@ int find_max_removal(vector<vector<int>> &chess, int N) {
     return N - K;
 }
 ```
+
+### 907. Sum of Subarray Minimums
+<https://leetcode.com/problems/sum-of-subarray-minimums/description/>
+
+分析：
+    1. N方解法很容易想到
+    2. 每一个数只在计算包含这个数并且这个数在当前subarray最小时有用，由此想到对于每一个数，如果知道这样的subarray的个数f(i)
+       那么sum = f(i) * num(i)
+    3. 如果知道以num(i)结尾的subarray的个数，和以num(i)开头的subarray的个数，那么f(i) = left(i) * right(i)
+    4. 计算left(i)时，需要找到在num(i)左边，有几个数小于num(i)，由此可以想到用stack保存之前的信息, 并且stack需要保存对于num(i)的subarray的长度
+    5. 注意连续的duplicates，只需要在left或者right中计算一次
+
+    Time: O(n)
+    Space: O(n)
+
+```c++
+int sumSubarrayMins(vector<int>& nums) {
+    int sum = 0;
+    int left[nums.size()], right[nums.size()];
+    stack<pair<int, int>> s1, s2;
+    for (int i = 0; i < nums.size(); ++i) {
+        int count = 1;
+        while (!s1.empty() && s1.top().first > nums[i]) {
+            count += s1.top().second;
+            s1.pop(); 
+        }
+        left[i] = count;
+        s1.push({nums[i], count});
+    }
+    for (int i = 0; i < nums.size(); ++i) {
+        int count = 1;
+        while (!s2.empty() && s2.top().first >= nums[i]) { 
+            count += s2.top().second;
+            s2.pop(); 
+        }
+        right[i] = count;
+        s2.push({nums[i], count});
+    }
+    for (int i = 0; i < nums.size(); ++i) {
+        sum += nums[i] * left[i] * right[i];
+        sum %= 1e9 + 7;     
+    }
+    return sum;
+}
+```
+
+
+
+
+
+
+
+
 
