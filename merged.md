@@ -885,16 +885,76 @@ public:
 };
 
 
-/**
- * Your PhoneDirectory object will be instantiated and called as such:
- * PhoneDirectory obj = new PhoneDirectory(maxNumbers);
- * int param_1 = obj.get();
- * bool param_2 = obj.check(number);
- * obj.release(number);
- */
-
+// Your PhoneDirectory object will be instantiated and called as such:
+// PhoneDirectory obj = new PhoneDirectory(maxNumbers);
+// int param_1 = obj.get();
+// bool param_2 = obj.check(number);
+// obj.release(number);
 ```
 
 
 ### Google面经
 Design HardDrive Management System, 给一个硬盘被分成N个区域，实现markUsed(int N) 和findNextNotUsed()
+
+### Google面经
+给一个 m * n 的board， 里面的值是0 或者1。 每一步我们可以去掉 一个点，如果这个点同一行行或者同一列列有其他的点。求一个remove order 使得我们可以去掉的点最多
+1 0 0 
+0 1 1  => 3 points 
+1 0 0 
+0 0 1 
+
+
+分析：
+    1. 从general case比较难得到解法，所以可以尝试一些特殊的输入，例如：
+        1, 1, 1
+        1, 1, 1  => 5 points
+
+        1, 1, 0
+        0, 1, 0  => 4 points
+        0, 1, 1
+
+       从特殊的case可以看出这是一个找connected component的问题，size为N的component最多可以remove N - 1个点
+    2. 一般寻找connected component可以想到用dfs或者union find，如果要求输出某一个可行的sequence，则用dfs会简单很多
+
+```c++
+void dfs(vector<vector<int>> &chess, int i, int j, vector<pair<int, int>> &steps) {
+    if (i < 0 || i >= chess.size() || j < 0 || j >= chess[i].size() || chess[i][j] == 0) {
+        return;
+    }
+
+    chess[i][j] = 0;
+    for (int k = j + 1; k < chess[i].size(); ++k) {
+        if (chess[i][k] != 0) {
+            dfs(chess, i, k, steps);
+            break;
+        }
+    }
+    for (int k = i + 1; k < chess.size(); ++k) {
+        if (chess[k][j] != 0) {
+            dfs(chess, k, j, steps);
+            break;
+        }
+    }
+
+    steps.push_back(pair<int, int>(i, j));
+}
+
+int find_max_removal(vector<vector<int>> &chess, int N) {
+    int K = 0;
+    vector<pair<int, int>> steps;
+    for (int i = 0; i < chess.size(); ++i) {
+        for (int j = 0; j < chess[i].size(); ++j) {
+            if (chess[i][j] != 0) {
+                ++K;
+                dfs(chess, i, j, steps);
+                steps.pop_back();
+            }
+        }
+    }
+    for (auto p: steps) {
+        cout << p.first << " " << p.second << endl;
+    }
+    return N - K;
+}
+```
+
