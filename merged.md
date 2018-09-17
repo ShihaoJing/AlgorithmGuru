@@ -1015,11 +1015,114 @@ int sumSubarrayMins(vector<int>& nums) {
 }
 ```
 
+#### 399. Evaluate Division
 
+分析：
+    1. 由equation之间的关系可以看出这是一个graph，很容易想到用dfs找到路径
+    2. dfs的复杂度可能是O(N2)的，由x/a = m, x/b = n, a/b = n/m这以性质可以想到用union find
 
+DFS
+```c++
+ struct Edge {
+     string n;
+     double w;
+     Edge(string node, double weight) : n(node), w(weight) {}
+ };
 
+ double dfs(unordered_map<string, vector<Edge>> &adjList, unordered_set<string> &visited, string node, string target) {
+     if (node == target) {
+         return 1.0;
+     }
 
+     if (visited.find(node) != visited.end()) {
+         return -1.0;
+     }
 
+     visited.insert(node);
 
+     for (auto &e: adjList[node]) {
+         double res = dfs(adjList, visited, e.n, target);
+         if (res != -1.0) {
+             return res * e.w;
+         }
+     }
 
+    return -1.0;
+ }   
+```
 
+union find
+```c++
+class UnionFind {
+public:
+    unordered_map<string, string> root;
+    unordered_map<string, double> ratio;
+    unordered_map<string, int> rank;
+    UnionFind() {}
+    void addNode(string node) { 
+        if (root.find(node) == root.end()) {
+            root[node] = node;
+            ratio[node] = 1.0;
+            rank[node] = 1;
+        }
+    }
+
+    void join(string p, string q, double r) {
+        string root_p = find(p), root_q = find(q);
+        if (root_p != root_q) {
+            if (rank[root_p] >= rank[root_q]) {
+                root[root_q] = root_p;
+                ratio[root_q] = r * ratio[p];
+                ++rank[root_p];
+            }
+            else {
+                root[root_p] = root_q;
+                ratio[root_p] = 1.0 / r * ratio[q];
+                ++rank[root_q];
+            }
+        }
+    }
+
+    string find(string p) {
+        if (root[p] != p) {
+            string r = find(root[p]);
+            ratio[p] *= ratio[root[p]];
+            root[p] = r;
+        }
+        return root[p];
+    }
+};
+
+vector<double> calcEquation(vector<pair<string, string>> equations, vector<double>& values, vector<pair<string, string>> queries) {
+    UnionFind uf;
+    for (int i = 0; i < equations.size(); ++i) {
+        auto &e = equations[i];
+        uf.addNode(e.first);
+        uf.addNode(e.second);
+        uf.join(e.first, e.second, values[i]);
+    }
+
+    vector<double> res;
+    for (auto &q: queries) {
+        if (uf.root.find(q.first) == uf.root.end() || uf.root.find(q.second) == uf.root.end()) {
+            res.push_back(-1);
+        }
+        else if (q.first == q.second) {
+            res.push_back(1);
+        }
+        else {
+            string root_p = uf.find(q.first), root_q = uf.find(q.second);
+            if (root_p != root_q) {
+                res.push_back(-1); 
+            }
+            else {
+                //cout << uf.ratio[q.second] << endl;
+                //cout << uf.ratio[q.first] << endl;
+                res.push_back(uf.ratio[q.second] / uf.ratio[q.first]);
+            }
+        }
+    }
+
+    return res;
+}
+```
