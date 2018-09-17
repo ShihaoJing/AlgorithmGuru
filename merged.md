@@ -21,6 +21,26 @@
 * 在做遍历时需要保存之前的信息，Stack是个不错的选择
 LC 907, 496, 739
 
+### Union Find 
+
+Union Find主要解决的问题是dynamic connectivity，有N个object之间有connection时，Union Find可以帮助快速知道两个object是否有connection，
+并且可以知道当前集合中有几个connected components.
+
+Union Find的实现有以下几种：
+
+1. Quick Find
+在union(p, q)时，将所有root == root(p)的节点都指向root(q)
+Time: union O(N), find O(1)
+2. Quick Union
+只将root(root(p))指向root(q)
+Time: O(N) in worst case, Tree could get tall
+3. Weighted Quick Union
+Maintanin一个size数组, group with smaller size go under group with larger size
+Time: O(logN), depth of each node is at most logN
+4. Weighted Quick Union with Path Compression
+Flatten Tree while finding the root of any node
+TIme: close to linear  
+
 
 ### Tree
 ### Graph
